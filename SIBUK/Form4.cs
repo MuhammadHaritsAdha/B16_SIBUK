@@ -29,3 +29,20 @@ namespace SIBUK
                 cmd.Parameters.AddWithValue("@awal", dtpAwal.Value.Date);
                 cmd.Parameters.AddWithValue("@akhir", dtpAkhir.Value.Date);
 
+                SqlDataAdapter da = new SqlDataAdapter(cmd);
+                DataTable dt = new DataTable();
+                da.Fill(dt);
+
+                dgvLaporan.DataSource = dt;
+
+                // hitung total
+                int total = 0;
+                int jumlah = dt.Rows.Count;
+
+                foreach (DataRow row in dt.Rows)
+                {
+                    total += Convert.ToInt32(row["totalHarga"]);
+                }
+
+                txtTotal.Text = total.ToString();
+                txtJumlah.Text = jumlah.ToString();
