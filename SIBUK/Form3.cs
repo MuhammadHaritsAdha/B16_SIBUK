@@ -50,3 +50,43 @@ namespace SIBUK
                 txtStok.Text = row.Cells["stok"].Value.ToString();
             }
         }
+
+        private void btnTambah_Click(object sender, EventArgs e)
+        {
+            using (SqlConnection conn = new SqlConnection(connString))
+            {
+                conn.Open();
+
+                //  1. CEK DULU
+                string cek = "SELECT COUNT(*) FROM Buku WHERE judul=@j AND pengarang=@p";
+                SqlCommand cekCmd = new SqlCommand(cek, conn);
+
+                cekCmd.Parameters.AddWithValue("@j", txtJudul.Text);
+                cekCmd.Parameters.AddWithValue("@p", txtPengarang.Text);
+
+                int count = (int)cekCmd.ExecuteScalar();
+
+                if (count > 0)
+                {
+                    MessageBox.Show("Data buku sudah ada! Gunakan Update.");
+                    return;
+                }
+
+                // 2. BARU INSERT
+                string query = "INSERT INTO Buku (judul, pengarang, penerbit, hargaSatuan, stok) VALUES (@j, @p, @pn, @h, @s)";
+                SqlCommand cmd = new SqlCommand(query, conn);
+
+                cmd.Parameters.AddWithValue("@j", txtJudul.Text);
+                cmd.Parameters.AddWithValue("@p", txtPengarang.Text);
+                cmd.Parameters.AddWithValue("@pn", txtPenerbit.Text);
+                cmd.Parameters.AddWithValue("@h", Convert.ToInt32(txtHarga.Text));
+                cmd.Parameters.AddWithValue("@s", Convert.ToInt32(txtStok.Text));
+
+                cmd.ExecuteNonQuery();
+
+                MessageBox.Show("Data berhasil ditambahkan!");
+
+                LoadData();
+                ResetForm();
+            }
+        }
