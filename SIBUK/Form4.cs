@@ -46,3 +46,14 @@ namespace SIBUK
 
                 txtTotal.Text = total.ToString();
                 txtJumlah.Text = jumlah.ToString();
+            }
+        }
+
+        private void btnReset_Click(object sender, EventArgs e)
+        {
+            dgvLaporan.DataSource = null;
+            txtTotal.Clear();
+            txtJumlah.Clear();
+        }
+    }
+}
