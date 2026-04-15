@@ -90,3 +90,34 @@ namespace SIBUK
                 ResetForm();
             }
         }
+
+        private void btnUpdate_Click(object sender, EventArgs e)
+        {
+            if (selectedId == -1)
+            {
+                MessageBox.Show("Pilih data dulu!");
+                return;
+            }
+
+            using (SqlConnection conn = new SqlConnection(connString))
+            {
+                conn.Open();
+
+                string query = "UPDATE Buku SET judul=@j, pengarang=@p, penerbit=@pn, hargaSatuan=@h, stok=@s WHERE bukuId=@id";
+                SqlCommand cmd = new SqlCommand(query, conn);
+
+                cmd.Parameters.AddWithValue("@j", txtJudul.Text);
+                cmd.Parameters.AddWithValue("@p", txtPengarang.Text);
+                cmd.Parameters.AddWithValue("@pn", txtPenerbit.Text);
+                cmd.Parameters.AddWithValue("@h", Convert.ToInt32(txtHarga.Text));
+                cmd.Parameters.AddWithValue("@s", Convert.ToInt32(txtStok.Text));
+                cmd.Parameters.AddWithValue("@id", selectedId);
+
+                cmd.ExecuteNonQuery();
+
+                MessageBox.Show("Data berhasil diupdate!");
+
+                LoadData();
+                ResetForm();
+            }
+        }
