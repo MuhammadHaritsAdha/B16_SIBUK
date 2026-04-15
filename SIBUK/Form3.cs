@@ -121,3 +121,34 @@ namespace SIBUK
                 ResetForm();
             }
         }
+
+        private void btnHapus_Click(object sender, EventArgs e)
+        {
+            if (selectedId == -1)
+            {
+                MessageBox.Show("Pilih data dulu!");
+                return;
+            }
+
+            DialogResult confirm = MessageBox.Show("Yakin hapus data?", "Konfirmasi", MessageBoxButtons.YesNo);
+
+            if (confirm == DialogResult.Yes)
+            {
+                using (SqlConnection conn = new SqlConnection(connString))
+                {
+                    conn.Open();
+
+                    string query = "DELETE FROM Buku WHERE bukuId=@id";
+                    SqlCommand cmd = new SqlCommand(query, conn);
+
+                    cmd.Parameters.AddWithValue("@id", selectedId);
+
+                    cmd.ExecuteNonQuery();
+
+                    MessageBox.Show("Data berhasil dihapus!");
+
+                    LoadData();
+                    ResetForm();
+                }
+            }
+        }
