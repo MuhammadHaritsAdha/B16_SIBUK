@@ -132,4 +132,15 @@ namespace SIBUK
 
             HitungTotal();
         }
+        private void HitungTotal()
+        {
+            int total = 0;
 
+            foreach (DataGridViewRow row in dgvTransaksi.Rows)
+            {
+                if (row.IsNewRow) continue; // penting!
+                total += Convert.ToInt32(row.Cells["subtotal"].Value);
+            }
+
+            txtTotal.Text = total.ToString();
+        }
