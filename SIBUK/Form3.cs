@@ -152,3 +152,21 @@ namespace SIBUK
                 }
             }
         }
+
+        private void ResetForm()
+        {
+            txtJudul.Clear();
+            txtPengarang.Clear();
+            txtPenerbit.Clear();
+            txtHarga.Clear();
+            txtStok.Clear();
+
+            selectedId = -1;
+        }
+
+        private void btnReset_Click(object sender, EventArgs e)
+        {
+            ResetForm();
+        }
+    }
+}
