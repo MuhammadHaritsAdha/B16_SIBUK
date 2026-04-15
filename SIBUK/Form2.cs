@@ -231,3 +231,16 @@ namespace SIBUK
             }
         }
 
+        private void btnKelola_Click(object sender, EventArgs e)
+        {
+            FormKelolaBuku f = new FormKelolaBuku();
+            f.ShowDialog();
+        }
+
+        private void btnLaporan_Click(object sender, EventArgs e)
+        {
+            FormLaporan f = new FormLaporan();
+            f.ShowDialog();
+        }
+    }
+}
