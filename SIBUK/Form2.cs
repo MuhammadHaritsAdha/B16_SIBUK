@@ -144,3 +144,90 @@ namespace SIBUK
 
             txtTotal.Text = total.ToString();
         }
+
+        private void btnSimpan_Click(object sender, EventArgs e)
+        {
+            if (dgvTransaksi.Rows.Count == 0)
+            {
+                MessageBox.Show("Belum ada item!");
+                return;
+            }
+
+            using (SqlConnection conn = new SqlConnection(connString))
+            {
+                conn.Open();
+
+                using (SqlTransaction trx = conn.BeginTransaction())
+                {
+                    try
+                    {
+                        // 1) insert header
+                        string q = @"INSERT INTO Transaksi (tanggal, userId, totalHarga, statusBayar)
+                             OUTPUT INSERTED.transaksiId
+                             VALUES (@tgl, @uid, @total, @status)";
+                        SqlCommand cmd = new SqlCommand(q, conn, trx);
+                        cmd.Parameters.AddWithValue("@tgl", DateTime.Now);
+                        cmd.Parameters.AddWithValue("@uid", userId);
+                        cmd.Parameters.AddWithValue("@total", Convert.ToInt32(txtTotal.Text));
+                        cmd.Parameters.AddWithValue("@status", "lunas");
+
+                        int transaksiId = (int)cmd.ExecuteScalar();
+
+                        // 2) insert detail
+                        foreach (DataGridViewRow row in dgvTransaksi.Rows)
+                        {
+                            if (row.IsNewRow) continue;
+
+                            int bukuId = Convert.ToInt32(row.Cells["bukuId"].Value);
+                            int jumlah = Convert.ToInt32(row.Cells["jumlah"].Value);
+
+                            // 1. CEK STOK DULU
+                            string qCek = "SELECT stok FROM Buku WHERE bukuId = @b";
+                            SqlCommand cmdCek = new SqlCommand(qCek, conn, trx);
+                            cmdCek.Parameters.AddWithValue("@b", bukuId);
+
+                            int stok = (int)cmdCek.ExecuteScalar();
+
+                            if (jumlah > stok)
+                            {
+                                MessageBox.Show("Stok tidak cukup!");
+                                trx.Rollback();
+                                return;
+                            }
+
+                            // 2. INSERT DETAIL
+                            string qd = "INSERT INTO Detail_Transaksi (transaksiId, bukuId, jumlah, subTotal) VALUES (@t, @b, @j, @s)";
+                            SqlCommand cd = new SqlCommand(qd, conn, trx);
+
+                            cd.Parameters.AddWithValue("@t", transaksiId);
+                            cd.Parameters.AddWithValue("@b", bukuId);
+                            cd.Parameters.AddWithValue("@j", jumlah);
+                            cd.Parameters.AddWithValue("@s", row.Cells["subtotal"].Value);
+
+                            cd.ExecuteNonQuery();
+
+                            // 3. UPDATE STOK
+                            string qUpdate = "UPDATE Buku SET stok = stok - @j WHERE bukuId = @b";
+                            SqlCommand cmdUpdate = new SqlCommand(qUpdate, conn, trx);
+
+                            cmdUpdate.Parameters.AddWithValue("@j", jumlah);
+                            cmdUpdate.Parameters.AddWithValue("@b", bukuId);
+
+                            cmdUpdate.ExecuteNonQuery();
+                        }
+
+                        trx.Commit();
+                        MessageBox.Show("Transaksi berhasil disimpan!");
+
+                        dgvTransaksi.Rows.Clear();
+                        txtTotal.Clear();
+                    }
+                    catch (Exception ex)
+                    {
+                        trx.Rollback();
+                        MessageBox.Show("Error: " + ex.Message);
+                    }
+                }
+            }
+        }
+
