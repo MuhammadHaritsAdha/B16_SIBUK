@@ -15,6 +15,9 @@ namespace SIBUK
         private void FormLaporan_Load(object sender, EventArgs e)
         {
             dgvLaporan.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+
+            txtTotal.ReadOnly = true;
+            txtJumlah.ReadOnly = true;
         }
 
         private void btnTampil_Click(object sender, EventArgs e)
