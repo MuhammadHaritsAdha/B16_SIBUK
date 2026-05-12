@@ -49,7 +49,24 @@ namespace SIBUK
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error: " + ex.Message);
+                MessageBox.Show("Error Login: " + ex.Message);
+            }
+        }
+
+        private void FormLogin_Load(object sender, EventArgs e)
+        {
+            CekKoneksi();
+        }
+
+        private void CekKoneksi()
+        {
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(connString))
+                {
+                    conn.Open();
+                    lblKoneksi.Text = "Terhubung ke Database";
+                    lblKoneksi.ForeColor = Color.Green;
             }
         }
     }
