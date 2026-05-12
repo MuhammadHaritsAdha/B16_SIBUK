@@ -97,6 +97,20 @@ namespace SIBUK
 
             int bukuId = Convert.ToInt32(cbBuku.SelectedValue);
 
+            // 2. HITUNG AKUMULASI: Cek berapa jumlah buku ini yang sudah ada di grid
+            foreach (DataGridViewRow row in dgvTransaksi.Rows)
+            {
+                if (row.IsNewRow) continue;
+                if (Convert.ToInt32(row.Cells["bukuId"].Value) == bukuId)
+                {
+                    jumlahDiKeranjang = Convert.ToInt32(row.Cells["jumlah"].Value);
+                    break;
+                }
+            }
+
+            int totalAkanDibeli = jumlahInput + jumlahDiKeranjang;
+
+            // 3. CEK STOk (Bandingkan Stok Gudang vs Total Akumulasi)
             using (SqlConnection conn = new SqlConnection(connString))
             {
                 conn.Open();
