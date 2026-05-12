@@ -203,18 +203,7 @@ namespace SIBUK
         {
             using (SqlConnection conn = new SqlConnection(connString))
             {
-                conn.Open();
-
-                //  1. CEK DULU
-                string cek = "SELECT COUNT(*) FROM Buku WHERE judul=@j AND pengarang=@p";
-                SqlCommand cekCmd = new SqlCommand(cek, conn);
-
-                cekCmd.Parameters.AddWithValue("@j", txtJudul.Text);
-                cekCmd.Parameters.AddWithValue("@p", txtPengarang.Text);
-
-                int count = (int)cekCmd.ExecuteScalar();
-
-                if (count > 0)
+                    using (SqlCommand cmd = new SqlCommand("sp_InsertBuku", conn))
                 {
                     MessageBox.Show("Data buku sudah ada! Gunakan Update.");
                     return;
