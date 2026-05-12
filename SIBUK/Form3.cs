@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data;
 using System.Data.SqlClient;
+using System.Drawing;
 using System.Windows.Forms;
 
 namespace SIBUK
@@ -9,6 +10,7 @@ namespace SIBUK
     {
         string connString = "Data Source=RITS;Initial Catalog=TokoBukuDB;Integrated Security=True";
         int selectedId = -1;
+
         public FormKelolaBuku()
         {
             InitializeComponent();
@@ -161,26 +163,44 @@ namespace SIBUK
       
         private void LoadData()
         {
-            using (SqlConnection conn = new SqlConnection(connString))
+            try
             {
-                conn.Open();
+                using (SqlConnection conn = new SqlConnection(connString))
+                {
+                    conn.Open();
                     // Mengambil data dari VIEW (vw_BukuPublic) 
                     string query = "SELECT * FROM vw_BukuPublic";
 
-                string query = "SELECT * FROM Buku";
-                SqlDataAdapter da = new SqlDataAdapter(query, conn);
-
-                DataTable dt = new DataTable();
-                da.Fill(dt);
-
-                dgvBuku.DataSource = dt;
+                    using (SqlDataAdapter da = new SqlDataAdapter(query, conn))
+                    {
+                        DataTable dt = new DataTable();
+                        da.Fill(dt);
+                        dgvBuku.DataSource = dt;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Gagal load data: " + ex.Message);
             }
         }
+
         private void FormKelolaBuku_Load(object sender, EventArgs e)
         {
+            this.bukuTableAdapter.Fill(this.tokoBukuDBDataSet.Buku);
             LoadData();
-
             dgvBuku.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+
+            // Pasang event TextChanged di semua field
+            txtJudul.TextChanged += txt_TextChanged;
+            txtPengarang.TextChanged += txt_TextChanged;
+            txtPenerbit.TextChanged += txt_TextChanged;
+            txtHarga.TextChanged += txt_TextChanged;
+            txtStok.TextChanged += txt_TextChanged;
+
+            // Pasang event KeyPress untuk field angka saja
+            txtHarga.KeyPress += txtAngka_KeyPress;
+            txtStok.KeyPress += txtAngka_KeyPress;
         }
 
         private void dgvBuku_CellContentClick(object sender, DataGridViewCellEventArgs e)
@@ -188,9 +208,7 @@ namespace SIBUK
             if (e.RowIndex >= 0)
             {
                 DataGridViewRow row = dgvBuku.Rows[e.RowIndex];
-
                 selectedId = Convert.ToInt32(row.Cells["bukuId"].Value);
-
                 txtJudul.Text = row.Cells["judul"].Value.ToString();
                 txtPengarang.Text = row.Cells["pengarang"].Value.ToString();
                 txtPenerbit.Text = row.Cells["penerbit"].Value.ToString();
@@ -201,40 +219,40 @@ namespace SIBUK
 
         private void btnTambah_Click(object sender, EventArgs e)
         {
-            using (SqlConnection conn = new SqlConnection(connString))
+            if (!Validasi()) return;
+
+            try
             {
-                    using (SqlCommand cmd = new SqlCommand("sp_InsertBuku", conn))
+                using (SqlConnection conn = new SqlConnection(connString))
                 {
-                    MessageBox.Show("Data buku sudah ada! Gunakan Update.");
-                    return;
+                    using (SqlCommand cmd = new SqlCommand("sp_InsertBuku", conn))
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.Parameters.AddWithValue("@judul", txtJudul.Text.Trim());
+                        cmd.Parameters.AddWithValue("@pengarang", txtPengarang.Text.Trim());
+                        cmd.Parameters.AddWithValue("@penerbit", txtPenerbit.Text.Trim());
+                        cmd.Parameters.AddWithValue("@harga", Convert.ToInt32(txtHarga.Text));
+                        cmd.Parameters.AddWithValue("@stok", Convert.ToInt32(txtStok.Text));
+
+                        conn.Open();
+                        cmd.ExecuteNonQuery();
+
+                        MessageBox.Show("Data berhasil ditambahkan!");
+                        LoadData();
+                        ResetForm();
+                    }
                 }
-
-                // 2. BARU INSERT
-                string query = "INSERT INTO Buku (judul, pengarang, penerbit, hargaSatuan, stok) VALUES (@j, @p, @pn, @h, @s)";
-                SqlCommand cmd = new SqlCommand(query, conn);
-
-                cmd.Parameters.AddWithValue("@j", txtJudul.Text);
-                cmd.Parameters.AddWithValue("@p", txtPengarang.Text);
-                cmd.Parameters.AddWithValue("@pn", txtPenerbit.Text);
-                cmd.Parameters.AddWithValue("@h", Convert.ToInt32(txtHarga.Text));
-                cmd.Parameters.AddWithValue("@s", Convert.ToInt32(txtStok.Text));
-
-                cmd.ExecuteNonQuery();
-
-                MessageBox.Show("Data berhasil ditambahkan!");
-
-                LoadData();
-                ResetForm();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Gagal tambah data: " + ex.Message);
             }
         }
 
         private void btnUpdate_Click(object sender, EventArgs e)
         {
-            if (selectedId == -1)
-            {
-                MessageBox.Show("Pilih data dulu!");
-                return;
-            }
+            if (selectedId == -1) return;
+            if (!Validasi()) return;
 
             using (SqlConnection conn = new SqlConnection(connString))
             {
@@ -242,36 +260,28 @@ namespace SIBUK
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
 
-                string query = "UPDATE Buku SET judul=@j, pengarang=@p, penerbit=@pn, hargaSatuan=@h, stok=@s WHERE bukuId=@id";
-                SqlCommand cmd = new SqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@id", selectedId);
+                    cmd.Parameters.AddWithValue("@judul", txtJudul.Text.Trim());
+                    cmd.Parameters.AddWithValue("@pengarang", txtPengarang.Text.Trim());
+                    cmd.Parameters.AddWithValue("@penerbit", txtPenerbit.Text.Trim());
+                    cmd.Parameters.AddWithValue("@harga", Convert.ToInt32(txtHarga.Text));
+                    cmd.Parameters.AddWithValue("@stok", Convert.ToInt32(txtStok.Text));
 
-                cmd.Parameters.AddWithValue("@j", txtJudul.Text);
-                cmd.Parameters.AddWithValue("@p", txtPengarang.Text);
-                cmd.Parameters.AddWithValue("@pn", txtPenerbit.Text);
-                cmd.Parameters.AddWithValue("@h", Convert.ToInt32(txtHarga.Text));
-                cmd.Parameters.AddWithValue("@s", Convert.ToInt32(txtStok.Text));
-                cmd.Parameters.AddWithValue("@id", selectedId);
+                    conn.Open();
+                    cmd.ExecuteNonQuery();
 
-                cmd.ExecuteNonQuery();
-
-                MessageBox.Show("Data berhasil diupdate!");
-
-                LoadData();
-                ResetForm();
+                    MessageBox.Show("Data berhasil diupdate!");
+                    LoadData();
+                    ResetForm();
+                }
             }
         }
 
         private void btnHapus_Click(object sender, EventArgs e)
         {
-            if (selectedId == -1)
-            {
-                MessageBox.Show("Pilih data dulu!");
-                return;
-            }
+            if (selectedId == -1) return;
 
-            DialogResult confirm = MessageBox.Show("Yakin hapus data?", "Konfirmasi", MessageBoxButtons.YesNo);
-
-            if (confirm == DialogResult.Yes)
+            if (MessageBox.Show("Yakin hapus?", "Konfirmasi", MessageBoxButtons.YesNo) == DialogResult.Yes)
             {
                 using (SqlConnection conn = new SqlConnection(connString))
                 {
@@ -280,19 +290,15 @@ namespace SIBUK
                         cmd.CommandType = CommandType.StoredProcedure;
                         cmd.Parameters.Add("@id", SqlDbType.Int).Value = selectedId;
 
-                    conn.Open();
+                        conn.Open();
+                        int rowsAffected = cmd.ExecuteNonQuery();
 
-                    string query = "DELETE FROM Buku WHERE bukuId=@id";
-                    SqlCommand cmd = new SqlCommand(query, conn);
+                        if (rowsAffected > 0)
+                            MessageBox.Show("Data berhasil dihapus");
 
-                    cmd.Parameters.AddWithValue("@id", selectedId);
-
-                    cmd.ExecuteNonQuery();
-
-                    MessageBox.Show("Data berhasil dihapus!");
-
-                    LoadData();
-                    ResetForm();
+                        LoadData();
+                        ResetForm();
+                    }
                 }
             }
         }
@@ -305,10 +311,17 @@ namespace SIBUK
             txtHarga.Clear();
             txtStok.Clear();
 
+            // Reset warna background
+            SetBorder(txtJudul, false);
+            SetBorder(txtPengarang, false);
+            SetBorder(txtPenerbit, false);
+            SetBorder(txtHarga, false);
+            SetBorder(txtStok, false);
+
             selectedId = -1;
         }
 
-        private void btnReset_Click(object sender, EventArgs e)
+        private void btnClear_Click(object sender, EventArgs e)
         {
             ResetForm();
         }
@@ -387,5 +400,15 @@ namespace SIBUK
             if (frm != null)
             {
                 frm.Show(); // Munculkan kembali form transaksi yang tadi di-hide
+            }
+            else
+            {
+                // Jika karena suatu hal form transaksi tidak ada, buat baru
+                FormTransaksi f = new FormTransaksi("admin", 1); // sesuaikan role/id
+                f.Show();
+            }
+
+            this.Close(); // Tutup form saat ini (Kelola/Laporan) agar memori bersih
+        }
     }
 }
