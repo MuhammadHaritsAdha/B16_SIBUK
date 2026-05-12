@@ -20,40 +20,51 @@ namespace SIBUK
             txtJumlah.ReadOnly = true;
         }
 
-        private void btnTampil_Click(object sender, EventArgs e)
+        private void btnReset_Click(object sender, EventArgs e)
         {
+            dgvLaporan.DataSource = null;
+            txtTotal.Clear();
+            txtJumlah.Clear();
+        }
+
+        private void btnSearch_Click(object sender, EventArgs e)
+        {
+            decimal totalLaporan = 0;
+            int jumlahBaris = 0;
+
             using (SqlConnection conn = new SqlConnection(connString))
             {
-                conn.Open();
+                try
+                {
+                    conn.Open();
                     // QUERY GABUNGAN: Filter Tanggal DAN Judul Buku sekaligus
                     // Menggunakan vw_LaporanDetail agar data yang muncul detail per buku
                     string query = @"SELECT * FROM vw_LaporanDetail 
                              WHERE (tanggal BETWEEN @awal AND @akhir) 
                              AND (judul LIKE @judul)";
 
-                string query = "SELECT * FROM Transaksi WHERE tanggal BETWEEN @awal AND @akhir";
-                SqlCommand cmd = new SqlCommand(query, conn);
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
+                    {
+                        // Ambil nilai dari DateTimePicker dan TextBox
+                        cmd.Parameters.AddWithValue("@awal", dtpAwal.Value.Date);
+                        cmd.Parameters.AddWithValue("@akhir", dtpAkhir.Value.Date);
+                        cmd.Parameters.AddWithValue("@judul", "%" + txtCariBuku.Text.Trim() + "%");
 
-                cmd.Parameters.AddWithValue("@awal", dtpAwal.Value.Date);
-                cmd.Parameters.AddWithValue("@akhir", dtpAkhir.Value.Date);
+                        SqlDataAdapter da = new SqlDataAdapter(cmd);
+                        DataTable dt = new DataTable();
+                        da.Fill(dt);
 
-                SqlDataAdapter da = new SqlDataAdapter(cmd);
-                DataTable dt = new DataTable();
-                da.Fill(dt);
+                        dgvLaporan.DataSource = dt;
 
-                dgvLaporan.DataSource = dt;
-
-                // hitung total
-                int total = 0;
-                int jumlah = dt.Rows.Count;
-
-                foreach (DataRow row in dt.Rows)
-                {
+                        //Hitung langsung dari DataTable
+                        jumlahBaris = dt.Rows.Count;
+                        foreach (DataRow row in dt.Rows)
+                        {
                             if (row["subTotal"] != DBNull.Value)
                             {
                                 totalLaporan += Convert.ToDecimal(row["subTotal"]);
                             }
-                }
+                        }
 
                         // Tampilkan hasil
                         txtTotal.Text = totalLaporan.ToString("N0"); // Format ribuan (1,000,000)
@@ -62,8 +73,8 @@ namespace SIBUK
                         if (jumlahBaris == 0)
                         {
                             MessageBox.Show("Data tidak ditemukan untuk kriteria tersebut.");
-            }
-        }
+                        }
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -81,7 +92,7 @@ namespace SIBUK
                 frm.Show(); // Munculkan kembali form transaksi yang tadi di-hide
             }
             else
-        {
+            {
                 FormTransaksi f = new FormTransaksi("admin", 1);
                 f.Show();
             }
