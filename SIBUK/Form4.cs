@@ -64,12 +64,29 @@ namespace SIBUK
                             MessageBox.Show("Data tidak ditemukan untuk kriteria tersebut.");
             }
         }
-
-        private void btnReset_Click(object sender, EventArgs e)
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Gagal memuat laporan: " + ex.Message);
+                }
+            }
+        }
+        private void btnKembali_Click(object sender, EventArgs e)
         {
-            dgvLaporan.DataSource = null;
-            txtTotal.Clear();
-            txtJumlah.Clear();
+            // Cek apakah FormTransaksi sudah terbuka di background
+            Form frm = Application.OpenForms["FormTransaksi"];
+
+            if (frm != null)
+            {
+                frm.Show(); // Munculkan kembali form transaksi yang tadi di-hide
+            }
+            else
+        {
+                FormTransaksi f = new FormTransaksi("admin", 1);
+                f.Show();
+            }
+
+            this.Close(); // Tutup form saat ini (Kelola/Laporan)
         }
     }
 }
