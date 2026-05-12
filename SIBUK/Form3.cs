@@ -312,5 +312,80 @@ namespace SIBUK
         {
             ResetForm();
         }
+
+        private void btnResetData_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(connString))
+                {
+                    conn.Open();
+
+                    // Gunakan UPDATE JOIN agar tidak melanggar Foreign Key
+                    // Mengembalikan nilai judul dan pengarang dari tabel backup ke tabel utama
+                    string query = @"
+                IF OBJECT_ID('dbo.Buku_Backup') IS NOT NULL
+                BEGIN
+                    UPDATE b
+                    SET b.judul = bk.judul,
+                        b.pengarang = bk.pengarang,
+                        b.penerbit = bk.penerbit,
+                        b.hargaSatuan = bk.hargaSatuan,
+                        b.stok = bk.stok
+                    FROM dbo.Buku b
+                    INNER JOIN dbo.Buku_Backup bk ON b.bukuId = bk.bukuId;
+                END";
+
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+
+                MessageBox.Show("Data berhasil dipulihkan dari Backup!", "Recovery Berhasil");
+
+                // Bersihkan input dan refresh VIEW
+                txtJudul.Clear();
+                LoadData();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Reset gagal: " + ex.Message);
+            }
+        }
+        private void btnTestInjection_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(connString))
+                {
+                    conn.Open();
+
+                    string query = "UPDATE Buku SET judul = 'HACKED', pengarang = 'HACKED' WHERE judul = '" + txtJudul.Text + "'";
+
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
+                    {
+                        int rowsAffected = cmd.ExecuteNonQuery();
+                        MessageBox.Show(rowsAffected + " data berhasil dimanipulasi (HACKED)!", "Status Injeksi");
+                    }
+                }
+
+                // Memuat ulang data dari VIEW untuk melihat hasilnya di Grid
+                LoadData();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error simulasi: " + ex.Message);
+            }
+        }
+
+        private void btnKembali_Click(object sender, EventArgs e)
+        {
+            // Cek apakah FormTransaksi sudah terbuka di background
+            Form frm = Application.OpenForms["FormTransaksi"];
+
+            if (frm != null)
+            {
+                frm.Show(); // Munculkan kembali form transaksi yang tadi di-hide
     }
 }
