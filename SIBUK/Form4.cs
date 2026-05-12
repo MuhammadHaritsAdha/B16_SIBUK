@@ -49,11 +49,19 @@ namespace SIBUK
 
                 foreach (DataRow row in dt.Rows)
                 {
-                    total += Convert.ToInt32(row["totalHarga"]);
+                            if (row["subTotal"] != DBNull.Value)
+                            {
+                                totalLaporan += Convert.ToDecimal(row["subTotal"]);
+                            }
                 }
 
-                txtTotal.Text = total.ToString();
-                txtJumlah.Text = jumlah.ToString();
+                        // Tampilkan hasil
+                        txtTotal.Text = totalLaporan.ToString("N0"); // Format ribuan (1,000,000)
+                        txtJumlah.Text = jumlahBaris.ToString();
+
+                        if (jumlahBaris == 0)
+                        {
+                            MessageBox.Show("Data tidak ditemukan untuk kriteria tersebut.");
             }
         }
 
