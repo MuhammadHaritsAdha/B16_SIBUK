@@ -28,6 +28,8 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormKelolaBuku));
             this.lblTitle = new System.Windows.Forms.Label();
             this.lblJudul = new System.Windows.Forms.Label();
             this.lblPengarang = new System.Windows.Forms.Label();
@@ -42,9 +44,31 @@
             this.btnTambah = new System.Windows.Forms.Button();
             this.btnUpdate = new System.Windows.Forms.Button();
             this.btnHapus = new System.Windows.Forms.Button();
-            this.btnReset = new System.Windows.Forms.Button();
+            this.btnClear = new System.Windows.Forms.Button();
             this.dgvBuku = new System.Windows.Forms.DataGridView();
+            this.btnTestInjection = new System.Windows.Forms.Button();
+            this.btnResetData = new System.Windows.Forms.Button();
+            this.btnKembali = new System.Windows.Forms.Button();
+            this.bindingNavigator1 = new System.Windows.Forms.BindingNavigator(this.components);
+            this.bindingNavigatorMoveFirstItem = new System.Windows.Forms.ToolStripButton();
+            this.bindingNavigatorMovePreviousItem = new System.Windows.Forms.ToolStripButton();
+            this.bindingNavigatorSeparator = new System.Windows.Forms.ToolStripSeparator();
+            this.bindingNavigatorPositionItem = new System.Windows.Forms.ToolStripTextBox();
+            this.bindingNavigatorCountItem = new System.Windows.Forms.ToolStripLabel();
+            this.bindingNavigatorSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            this.bindingNavigatorMoveNextItem = new System.Windows.Forms.ToolStripButton();
+            this.bindingNavigatorMoveLastItem = new System.Windows.Forms.ToolStripButton();
+            this.bindingNavigatorSeparator2 = new System.Windows.Forms.ToolStripSeparator();
+            this.bindingNavigatorAddNewItem = new System.Windows.Forms.ToolStripButton();
+            this.bindingNavigatorDeleteItem = new System.Windows.Forms.ToolStripButton();
+            this.tokoBukuDBDataSet = new SIBUK.TokoBukuDBDataSet();
+            this.bukuBindingSource = new System.Windows.Forms.BindingSource(this.components);
+            this.bukuTableAdapter = new SIBUK.TokoBukuDBDataSetTableAdapters.BukuTableAdapter();
             ((System.ComponentModel.ISupportInitialize)(this.dgvBuku)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.bindingNavigator1)).BeginInit();
+            this.bindingNavigator1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.tokoBukuDBDataSet)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.bukuBindingSource)).BeginInit();
             this.SuspendLayout();
             // 
             // lblTitle
@@ -103,6 +127,7 @@
             // 
             // txtJudul
             // 
+            this.txtJudul.DataBindings.Add(new System.Windows.Forms.Binding("Text", this.bukuBindingSource, "judul", true));
             this.txtJudul.Location = new System.Drawing.Point(259, 110);
             this.txtJudul.Name = "txtJudul";
             this.txtJudul.Size = new System.Drawing.Size(221, 31);
@@ -110,6 +135,7 @@
             // 
             // txtPengarang
             // 
+            this.txtPengarang.DataBindings.Add(new System.Windows.Forms.Binding("Text", this.bukuBindingSource, "pengarang", true));
             this.txtPengarang.Location = new System.Drawing.Point(259, 161);
             this.txtPengarang.Name = "txtPengarang";
             this.txtPengarang.Size = new System.Drawing.Size(221, 31);
@@ -117,6 +143,7 @@
             // 
             // txtPenerbit
             // 
+            this.txtPenerbit.DataBindings.Add(new System.Windows.Forms.Binding("Text", this.bukuBindingSource, "penerbit", true));
             this.txtPenerbit.Location = new System.Drawing.Point(259, 216);
             this.txtPenerbit.Name = "txtPenerbit";
             this.txtPenerbit.Size = new System.Drawing.Size(221, 31);
@@ -124,6 +151,7 @@
             // 
             // txtHarga
             // 
+            this.txtHarga.DataBindings.Add(new System.Windows.Forms.Binding("Text", this.bukuBindingSource, "hargaSatuan", true));
             this.txtHarga.Location = new System.Drawing.Point(259, 267);
             this.txtHarga.Name = "txtHarga";
             this.txtHarga.Size = new System.Drawing.Size(221, 31);
@@ -131,6 +159,7 @@
             // 
             // txtStok
             // 
+            this.txtStok.DataBindings.Add(new System.Windows.Forms.Binding("Text", this.bukuBindingSource, "stok", true));
             this.txtStok.Location = new System.Drawing.Point(259, 319);
             this.txtStok.Name = "txtStok";
             this.txtStok.Size = new System.Drawing.Size(221, 31);
@@ -166,15 +195,15 @@
             this.btnHapus.UseVisualStyleBackColor = true;
             this.btnHapus.Click += new System.EventHandler(this.btnHapus_Click);
             // 
-            // btnReset
+            // btnClear
             // 
-            this.btnReset.Location = new System.Drawing.Point(742, 400);
-            this.btnReset.Name = "btnReset";
-            this.btnReset.Size = new System.Drawing.Size(149, 63);
-            this.btnReset.TabIndex = 14;
-            this.btnReset.Text = "Reset";
-            this.btnReset.UseVisualStyleBackColor = true;
-            this.btnReset.Click += new System.EventHandler(this.btnReset_Click);
+            this.btnClear.Location = new System.Drawing.Point(742, 400);
+            this.btnClear.Name = "btnClear";
+            this.btnClear.Size = new System.Drawing.Size(149, 63);
+            this.btnClear.TabIndex = 14;
+            this.btnClear.Text = "Clear";
+            this.btnClear.UseVisualStyleBackColor = true;
+            this.btnClear.Click += new System.EventHandler(this.btnClear_Click);
             // 
             // dgvBuku
             // 
@@ -187,13 +216,177 @@
             this.dgvBuku.TabIndex = 15;
             this.dgvBuku.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvBuku_CellContentClick);
             // 
+            // btnTestInjection
+            // 
+            this.btnTestInjection.Location = new System.Drawing.Point(903, 110);
+            this.btnTestInjection.Name = "btnTestInjection";
+            this.btnTestInjection.Size = new System.Drawing.Size(158, 76);
+            this.btnTestInjection.TabIndex = 16;
+            this.btnTestInjection.Text = "Test Injection";
+            this.btnTestInjection.UseVisualStyleBackColor = true;
+            this.btnTestInjection.Click += new System.EventHandler(this.btnTestInjection_Click);
+            // 
+            // btnResetData
+            // 
+            this.btnResetData.Location = new System.Drawing.Point(903, 216);
+            this.btnResetData.Name = "btnResetData";
+            this.btnResetData.Size = new System.Drawing.Size(158, 61);
+            this.btnResetData.TabIndex = 17;
+            this.btnResetData.Text = "Reset Data";
+            this.btnResetData.UseVisualStyleBackColor = true;
+            this.btnResetData.Click += new System.EventHandler(this.btnResetData_Click);
+            // 
+            // btnKembali
+            // 
+            this.btnKembali.Location = new System.Drawing.Point(980, 744);
+            this.btnKembali.Name = "btnKembali";
+            this.btnKembali.Size = new System.Drawing.Size(152, 78);
+            this.btnKembali.TabIndex = 18;
+            this.btnKembali.Text = "Kembali";
+            this.btnKembali.UseVisualStyleBackColor = true;
+            this.btnKembali.Click += new System.EventHandler(this.btnKembali_Click);
+            // 
+            // bindingNavigator1
+            // 
+            this.bindingNavigator1.AddNewItem = this.bindingNavigatorAddNewItem;
+            this.bindingNavigator1.BindingSource = this.bukuBindingSource;
+            this.bindingNavigator1.CountItem = this.bindingNavigatorCountItem;
+            this.bindingNavigator1.DeleteItem = this.bindingNavigatorDeleteItem;
+            this.bindingNavigator1.ImageScalingSize = new System.Drawing.Size(32, 32);
+            this.bindingNavigator1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.bindingNavigatorMoveFirstItem,
+            this.bindingNavigatorMovePreviousItem,
+            this.bindingNavigatorSeparator,
+            this.bindingNavigatorPositionItem,
+            this.bindingNavigatorCountItem,
+            this.bindingNavigatorSeparator1,
+            this.bindingNavigatorMoveNextItem,
+            this.bindingNavigatorMoveLastItem,
+            this.bindingNavigatorSeparator2,
+            this.bindingNavigatorAddNewItem,
+            this.bindingNavigatorDeleteItem});
+            this.bindingNavigator1.Location = new System.Drawing.Point(0, 0);
+            this.bindingNavigator1.MoveFirstItem = this.bindingNavigatorMoveFirstItem;
+            this.bindingNavigator1.MoveLastItem = this.bindingNavigatorMoveLastItem;
+            this.bindingNavigator1.MoveNextItem = this.bindingNavigatorMoveNextItem;
+            this.bindingNavigator1.MovePreviousItem = this.bindingNavigatorMovePreviousItem;
+            this.bindingNavigator1.Name = "bindingNavigator1";
+            this.bindingNavigator1.PositionItem = this.bindingNavigatorPositionItem;
+            this.bindingNavigator1.Size = new System.Drawing.Size(1218, 42);
+            this.bindingNavigator1.TabIndex = 19;
+            this.bindingNavigator1.Text = "bindingNavigator1";
+            // 
+            // bindingNavigatorMoveFirstItem
+            // 
+            this.bindingNavigatorMoveFirstItem.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.bindingNavigatorMoveFirstItem.Image = ((System.Drawing.Image)(resources.GetObject("bindingNavigatorMoveFirstItem.Image")));
+            this.bindingNavigatorMoveFirstItem.Name = "bindingNavigatorMoveFirstItem";
+            this.bindingNavigatorMoveFirstItem.RightToLeftAutoMirrorImage = true;
+            this.bindingNavigatorMoveFirstItem.Size = new System.Drawing.Size(46, 36);
+            this.bindingNavigatorMoveFirstItem.Text = "Move first";
+            // 
+            // bindingNavigatorMovePreviousItem
+            // 
+            this.bindingNavigatorMovePreviousItem.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.bindingNavigatorMovePreviousItem.Image = ((System.Drawing.Image)(resources.GetObject("bindingNavigatorMovePreviousItem.Image")));
+            this.bindingNavigatorMovePreviousItem.Name = "bindingNavigatorMovePreviousItem";
+            this.bindingNavigatorMovePreviousItem.RightToLeftAutoMirrorImage = true;
+            this.bindingNavigatorMovePreviousItem.Size = new System.Drawing.Size(46, 36);
+            this.bindingNavigatorMovePreviousItem.Text = "Move previous";
+            // 
+            // bindingNavigatorSeparator
+            // 
+            this.bindingNavigatorSeparator.Name = "bindingNavigatorSeparator";
+            this.bindingNavigatorSeparator.Size = new System.Drawing.Size(6, 42);
+            // 
+            // bindingNavigatorPositionItem
+            // 
+            this.bindingNavigatorPositionItem.AccessibleName = "Position";
+            this.bindingNavigatorPositionItem.AutoSize = false;
+            this.bindingNavigatorPositionItem.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.bindingNavigatorPositionItem.Name = "bindingNavigatorPositionItem";
+            this.bindingNavigatorPositionItem.Size = new System.Drawing.Size(50, 39);
+            this.bindingNavigatorPositionItem.Text = "0";
+            this.bindingNavigatorPositionItem.ToolTipText = "Current position";
+            // 
+            // bindingNavigatorCountItem
+            // 
+            this.bindingNavigatorCountItem.Name = "bindingNavigatorCountItem";
+            this.bindingNavigatorCountItem.Size = new System.Drawing.Size(70, 36);
+            this.bindingNavigatorCountItem.Text = "of {0}";
+            this.bindingNavigatorCountItem.ToolTipText = "Total number of items";
+            // 
+            // bindingNavigatorSeparator1
+            // 
+            this.bindingNavigatorSeparator1.Name = "bindingNavigatorSeparator";
+            this.bindingNavigatorSeparator1.Size = new System.Drawing.Size(6, 42);
+            // 
+            // bindingNavigatorMoveNextItem
+            // 
+            this.bindingNavigatorMoveNextItem.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.bindingNavigatorMoveNextItem.Image = ((System.Drawing.Image)(resources.GetObject("bindingNavigatorMoveNextItem.Image")));
+            this.bindingNavigatorMoveNextItem.Name = "bindingNavigatorMoveNextItem";
+            this.bindingNavigatorMoveNextItem.RightToLeftAutoMirrorImage = true;
+            this.bindingNavigatorMoveNextItem.Size = new System.Drawing.Size(46, 36);
+            this.bindingNavigatorMoveNextItem.Text = "Move next";
+            // 
+            // bindingNavigatorMoveLastItem
+            // 
+            this.bindingNavigatorMoveLastItem.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.bindingNavigatorMoveLastItem.Image = ((System.Drawing.Image)(resources.GetObject("bindingNavigatorMoveLastItem.Image")));
+            this.bindingNavigatorMoveLastItem.Name = "bindingNavigatorMoveLastItem";
+            this.bindingNavigatorMoveLastItem.RightToLeftAutoMirrorImage = true;
+            this.bindingNavigatorMoveLastItem.Size = new System.Drawing.Size(46, 36);
+            this.bindingNavigatorMoveLastItem.Text = "Move last";
+            // 
+            // bindingNavigatorSeparator2
+            // 
+            this.bindingNavigatorSeparator2.Name = "bindingNavigatorSeparator";
+            this.bindingNavigatorSeparator2.Size = new System.Drawing.Size(6, 42);
+            // 
+            // bindingNavigatorAddNewItem
+            // 
+            this.bindingNavigatorAddNewItem.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.bindingNavigatorAddNewItem.Image = ((System.Drawing.Image)(resources.GetObject("bindingNavigatorAddNewItem.Image")));
+            this.bindingNavigatorAddNewItem.Name = "bindingNavigatorAddNewItem";
+            this.bindingNavigatorAddNewItem.RightToLeftAutoMirrorImage = true;
+            this.bindingNavigatorAddNewItem.Size = new System.Drawing.Size(46, 36);
+            this.bindingNavigatorAddNewItem.Text = "Add new";
+            // 
+            // bindingNavigatorDeleteItem
+            // 
+            this.bindingNavigatorDeleteItem.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.bindingNavigatorDeleteItem.Image = ((System.Drawing.Image)(resources.GetObject("bindingNavigatorDeleteItem.Image")));
+            this.bindingNavigatorDeleteItem.Name = "bindingNavigatorDeleteItem";
+            this.bindingNavigatorDeleteItem.RightToLeftAutoMirrorImage = true;
+            this.bindingNavigatorDeleteItem.Size = new System.Drawing.Size(46, 36);
+            this.bindingNavigatorDeleteItem.Text = "Delete";
+            // 
+            // tokoBukuDBDataSet
+            // 
+            this.tokoBukuDBDataSet.DataSetName = "TokoBukuDBDataSet";
+            this.tokoBukuDBDataSet.SchemaSerializationMode = System.Data.SchemaSerializationMode.IncludeSchema;
+            // 
+            // bukuBindingSource
+            // 
+            this.bukuBindingSource.DataMember = "Buku";
+            this.bukuBindingSource.DataSource = this.tokoBukuDBDataSet;
+            // 
+            // bukuTableAdapter
+            // 
+            this.bukuTableAdapter.ClearBeforeFill = true;
+            // 
             // FormKelolaBuku
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 25F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1218, 873);
+            this.Controls.Add(this.bindingNavigator1);
+            this.Controls.Add(this.btnKembali);
+            this.Controls.Add(this.btnResetData);
+            this.Controls.Add(this.btnTestInjection);
             this.Controls.Add(this.dgvBuku);
-            this.Controls.Add(this.btnReset);
+            this.Controls.Add(this.btnClear);
             this.Controls.Add(this.btnHapus);
             this.Controls.Add(this.btnUpdate);
             this.Controls.Add(this.btnTambah);
@@ -212,6 +405,11 @@
             this.Text = "Kelola Buku";
             this.Load += new System.EventHandler(this.FormKelolaBuku_Load);
             ((System.ComponentModel.ISupportInitialize)(this.dgvBuku)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.bindingNavigator1)).EndInit();
+            this.bindingNavigator1.ResumeLayout(false);
+            this.bindingNavigator1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.tokoBukuDBDataSet)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.bukuBindingSource)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -233,7 +431,25 @@
         private System.Windows.Forms.Button btnTambah;
         private System.Windows.Forms.Button btnUpdate;
         private System.Windows.Forms.Button btnHapus;
-        private System.Windows.Forms.Button btnReset;
+        private System.Windows.Forms.Button btnClear;
         private System.Windows.Forms.DataGridView dgvBuku;
+        private System.Windows.Forms.Button btnTestInjection;
+        private System.Windows.Forms.Button btnResetData;
+        private System.Windows.Forms.Button btnKembali;
+        private System.Windows.Forms.BindingNavigator bindingNavigator1;
+        private System.Windows.Forms.ToolStripButton bindingNavigatorAddNewItem;
+        private System.Windows.Forms.ToolStripLabel bindingNavigatorCountItem;
+        private System.Windows.Forms.ToolStripButton bindingNavigatorDeleteItem;
+        private System.Windows.Forms.ToolStripButton bindingNavigatorMoveFirstItem;
+        private System.Windows.Forms.ToolStripButton bindingNavigatorMovePreviousItem;
+        private System.Windows.Forms.ToolStripSeparator bindingNavigatorSeparator;
+        private System.Windows.Forms.ToolStripTextBox bindingNavigatorPositionItem;
+        private System.Windows.Forms.ToolStripSeparator bindingNavigatorSeparator1;
+        private System.Windows.Forms.ToolStripButton bindingNavigatorMoveNextItem;
+        private System.Windows.Forms.ToolStripButton bindingNavigatorMoveLastItem;
+        private System.Windows.Forms.ToolStripSeparator bindingNavigatorSeparator2;
+        private TokoBukuDBDataSet tokoBukuDBDataSet;
+        private System.Windows.Forms.BindingSource bukuBindingSource;
+        private TokoBukuDBDataSetTableAdapters.BukuTableAdapter bukuTableAdapter;
     }
 }

@@ -40,6 +40,10 @@
             this.label2 = new System.Windows.Forms.Label();
             this.txtTotal = new System.Windows.Forms.TextBox();
             this.txtJumlah = new System.Windows.Forms.TextBox();
+            this.txtCariBuku = new System.Windows.Forms.TextBox();
+            this.btnSearch = new System.Windows.Forms.Button();
+            this.btnKembali = new System.Windows.Forms.Button();
+            this.lblJudul = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.dgvLaporan)).BeginInit();
             this.SuspendLayout();
             // 
@@ -86,17 +90,14 @@
             // 
             // btnTampil
             // 
-            this.btnTampil.Location = new System.Drawing.Point(68, 262);
+            this.btnTampil.Location = new System.Drawing.Point(0, 0);
             this.btnTampil.Name = "btnTampil";
-            this.btnTampil.Size = new System.Drawing.Size(140, 52);
-            this.btnTampil.TabIndex = 5;
-            this.btnTampil.Text = "Tampilkan";
-            this.btnTampil.UseVisualStyleBackColor = true;
-            this.btnTampil.Click += new System.EventHandler(this.btnTampil_Click);
+            this.btnTampil.Size = new System.Drawing.Size(75, 23);
+            this.btnTampil.TabIndex = 16;
             // 
             // btnReset
             // 
-            this.btnReset.Location = new System.Drawing.Point(281, 262);
+            this.btnReset.Location = new System.Drawing.Point(935, 251);
             this.btnReset.Name = "btnReset";
             this.btnReset.Size = new System.Drawing.Size(154, 52);
             this.btnReset.TabIndex = 6;
@@ -146,11 +147,51 @@
             this.txtJumlah.Size = new System.Drawing.Size(417, 31);
             this.txtJumlah.TabIndex = 11;
             // 
+            // txtCariBuku
+            // 
+            this.txtCariBuku.Location = new System.Drawing.Point(281, 260);
+            this.txtCariBuku.Name = "txtCariBuku";
+            this.txtCariBuku.Size = new System.Drawing.Size(251, 31);
+            this.txtCariBuku.TabIndex = 12;
+            // 
+            // btnSearch
+            // 
+            this.btnSearch.Location = new System.Drawing.Point(711, 255);
+            this.btnSearch.Name = "btnSearch";
+            this.btnSearch.Size = new System.Drawing.Size(173, 48);
+            this.btnSearch.TabIndex = 13;
+            this.btnSearch.Text = "Search";
+            this.btnSearch.UseVisualStyleBackColor = true;
+            this.btnSearch.Click += new System.EventHandler(this.btnSearch_Click);
+            // 
+            // btnKembali
+            // 
+            this.btnKembali.Location = new System.Drawing.Point(1099, 759);
+            this.btnKembali.Name = "btnKembali";
+            this.btnKembali.Size = new System.Drawing.Size(162, 68);
+            this.btnKembali.TabIndex = 14;
+            this.btnKembali.Text = "Kembali";
+            this.btnKembali.UseVisualStyleBackColor = true;
+            this.btnKembali.Click += new System.EventHandler(this.btnKembali_Click);
+            // 
+            // lblJudul
+            // 
+            this.lblJudul.AutoSize = true;
+            this.lblJudul.Location = new System.Drawing.Point(68, 265);
+            this.lblJudul.Name = "lblJudul";
+            this.lblJudul.Size = new System.Drawing.Size(119, 25);
+            this.lblJudul.TabIndex = 15;
+            this.lblJudul.Text = "Judul Buku";
+            // 
             // FormLaporan
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 25F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1399, 918);
+            this.Controls.Add(this.lblJudul);
+            this.Controls.Add(this.btnKembali);
+            this.Controls.Add(this.btnSearch);
+            this.Controls.Add(this.txtCariBuku);
             this.Controls.Add(this.txtJumlah);
             this.Controls.Add(this.txtTotal);
             this.Controls.Add(this.label2);
@@ -186,5 +227,9 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.TextBox txtTotal;
         private System.Windows.Forms.TextBox txtJumlah;
+        private System.Windows.Forms.TextBox txtCariBuku;
+        private System.Windows.Forms.Button btnSearch;
+        private System.Windows.Forms.Button btnKembali;
+        private System.Windows.Forms.Label lblJudul;
     }
 }

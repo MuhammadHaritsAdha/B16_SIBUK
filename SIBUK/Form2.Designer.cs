@@ -42,6 +42,9 @@
             this.btnSimpan = new System.Windows.Forms.Button();
             this.btnLaporan = new System.Windows.Forms.Button();
             this.btnKelola = new System.Windows.Forms.Button();
+            this.btnUpdate = new System.Windows.Forms.Button();
+            this.btnDelete = new System.Windows.Forms.Button();
+            this.btnLogOut = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dgvTransaksi)).BeginInit();
             this.SuspendLayout();
             // 
@@ -122,7 +125,7 @@
             this.dgvTransaksi.Name = "dgvTransaksi";
             this.dgvTransaksi.RowHeadersWidth = 82;
             this.dgvTransaksi.RowTemplate.Height = 33;
-            this.dgvTransaksi.Size = new System.Drawing.Size(723, 133);
+            this.dgvTransaksi.Size = new System.Drawing.Size(852, 241);
             this.dgvTransaksi.TabIndex = 8;
             this.dgvTransaksi.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvTransaksi_CellContentClick);
             // 
@@ -140,7 +143,7 @@
             this.txtTotal.Location = new System.Drawing.Point(235, 681);
             this.txtTotal.Name = "txtTotal";
             this.txtTotal.Size = new System.Drawing.Size(173, 31);
-            this.txtTotal.TabIndex = 10;
+            this.txtTotal.TabIndex = 17;
             // 
             // btnSimpan
             // 
@@ -172,11 +175,44 @@
             this.btnKelola.UseVisualStyleBackColor = true;
             this.btnKelola.Click += new System.EventHandler(this.btnKelola_Click);
             // 
+            // btnUpdate
+            // 
+            this.btnUpdate.Location = new System.Drawing.Point(274, 302);
+            this.btnUpdate.Name = "btnUpdate";
+            this.btnUpdate.Size = new System.Drawing.Size(134, 53);
+            this.btnUpdate.TabIndex = 14;
+            this.btnUpdate.Text = "Update";
+            this.btnUpdate.UseVisualStyleBackColor = true;
+            this.btnUpdate.Click += new System.EventHandler(this.btnUpdate_Click);
+            // 
+            // btnDelete
+            // 
+            this.btnDelete.Location = new System.Drawing.Point(447, 302);
+            this.btnDelete.Name = "btnDelete";
+            this.btnDelete.Size = new System.Drawing.Size(128, 53);
+            this.btnDelete.TabIndex = 15;
+            this.btnDelete.Text = "Delete";
+            this.btnDelete.UseVisualStyleBackColor = true;
+            this.btnDelete.Click += new System.EventHandler(this.btnDelete_Click);
+            // 
+            // btnLogOut
+            // 
+            this.btnLogOut.Location = new System.Drawing.Point(788, 41);
+            this.btnLogOut.Name = "btnLogOut";
+            this.btnLogOut.Size = new System.Drawing.Size(143, 58);
+            this.btnLogOut.TabIndex = 16;
+            this.btnLogOut.Text = "Logout";
+            this.btnLogOut.UseVisualStyleBackColor = true;
+            this.btnLogOut.Click += new System.EventHandler(this.btnLogOut_Click);
+            // 
             // FormTransaksi
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 25F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(972, 927);
+            this.ClientSize = new System.Drawing.Size(1001, 885);
+            this.Controls.Add(this.btnLogOut);
+            this.Controls.Add(this.btnDelete);
+            this.Controls.Add(this.btnUpdate);
             this.Controls.Add(this.btnKelola);
             this.Controls.Add(this.btnLaporan);
             this.Controls.Add(this.btnSimpan);
@@ -216,5 +252,8 @@
         private System.Windows.Forms.Button btnSimpan;
         private System.Windows.Forms.Button btnLaporan;
         private System.Windows.Forms.Button btnKelola;
+        private System.Windows.Forms.Button btnUpdate;
+        private System.Windows.Forms.Button btnDelete;
+        private System.Windows.Forms.Button btnLogOut;
     }
 }
