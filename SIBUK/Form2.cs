@@ -25,6 +25,17 @@ namespace SIBUK
             if (roleUser != "admin")
                 btnLaporan.Visible = false;
 
+            if (dgvTransaksi.Columns.Count == 0)
+            {
+                dgvTransaksi.Columns.Add("bukuId", "ID Buku");
+                dgvTransaksi.Columns.Add("judul", "Judul Buku");
+                dgvTransaksi.Columns.Add("harga", "Harga");
+                dgvTransaksi.Columns.Add("jumlah", "Qty");
+                dgvTransaksi.Columns.Add("subtotal", "Subtotal");
+            }
+            txtTotal.ReadOnly = true;
+            txtTotal.Text = "0";
+
             using (SqlConnection conn = new SqlConnection(connString))
             {
                 conn.Open();
