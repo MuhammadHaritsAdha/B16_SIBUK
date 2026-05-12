@@ -1,6 +1,8 @@
 ﻿using System;
-using System.Windows.Forms;
 using System.Data.SqlClient;
+using System.Drawing;
+using System.Windows.Forms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace SIBUK
 {
@@ -25,26 +27,29 @@ namespace SIBUK
                     // MEMANGGIL VIEW: Query diarahkan ke vw_UserLogin, bukan tabel Users
                     string query = "SELECT * FROM vw_UserLogin WHERE username=@u AND password=@p";
 
-                    SqlCommand cmd = new SqlCommand(query, conn);
-                    cmd.Parameters.AddWithValue("@u", txtUsername.Text);
-                    cmd.Parameters.AddWithValue("@p", txtPassword.Text);
-
-                    SqlDataReader reader = cmd.ExecuteReader();
-
-                    if (reader.Read())
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
                     {
-                        string role = reader["role"].ToString();
-                        int userId = Convert.ToInt32(reader["userId"]);
+                        cmd.Parameters.AddWithValue("@u", txtUsername.Text);
+                        cmd.Parameters.AddWithValue("@p", txtPassword.Text);
 
-                        MessageBox.Show("Login berhasil!");
+                        using (SqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                string role = reader["role"].ToString();
+                                int userId = Convert.ToInt32(reader["userId"]);
 
-                        FormTransaksi f = new FormTransaksi(role, userId);
-                        f.Show();
-                        this.Hide();
-                    }
-                    else
-                    {
-                        MessageBox.Show("Data Tidak Valid!");
+                                MessageBox.Show("Login berhasil sebagai " + role + "!");
+
+                                FormTransaksi f = new FormTransaksi(role, userId);
+                                f.Show();
+                                this.Hide();
+                            }
+                            else
+                            {
+                                MessageBox.Show("Username atau Password Salah!");
+                            }
+                        }
                     }
                 }
             }
@@ -68,10 +73,14 @@ namespace SIBUK
                     conn.Open();
                     lblKoneksi.Text = "Terhubung ke Database";
                     lblKoneksi.ForeColor = Color.Green;
+                }
+            }
+            catch
+            {
+                lblKoneksi.Text = "Tidak Terhubung ke Database";
+                lblKoneksi.ForeColor = Color.Red;
             }
         }
-    }
-}
 
         private void FormLogin_FormClosing(object sender, FormClosingEventArgs e)
         {
