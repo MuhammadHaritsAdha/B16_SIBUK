@@ -238,7 +238,9 @@ namespace SIBUK
 
             using (SqlConnection conn = new SqlConnection(connString))
             {
-                conn.Open();
+                using (SqlCommand cmd = new SqlCommand("sp_UpdateBuku", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
 
                 string query = "UPDATE Buku SET judul=@j, pengarang=@p, penerbit=@pn, hargaSatuan=@h, stok=@s WHERE bukuId=@id";
                 SqlCommand cmd = new SqlCommand(query, conn);
