@@ -275,6 +275,11 @@ namespace SIBUK
             {
                 using (SqlConnection conn = new SqlConnection(connString))
                 {
+                    using (SqlCommand cmd = new SqlCommand("sp_DeleteBuku", conn))
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.Parameters.Add("@id", SqlDbType.Int).Value = selectedId;
+
                     conn.Open();
 
                     string query = "DELETE FROM Buku WHERE bukuId=@id";
