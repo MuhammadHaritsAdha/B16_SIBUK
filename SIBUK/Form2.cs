@@ -22,8 +22,7 @@ namespace SIBUK
 
         private void FormTransaksi_Load(object sender, EventArgs e)
         {
-            if (roleUser != "admin")
-                btnLaporan.Visible = false;
+            if (roleUser != "admin") btnLaporan.Visible = false;
 
             if (dgvTransaksi.Columns.Count == 0)
             {
@@ -41,32 +40,15 @@ namespace SIBUK
                 using (SqlCommand cmd = new SqlCommand("sp_GetBukuSimple", conn))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
-                conn.Open();
+                    conn.Open();
+                    DataTable dt = new DataTable();
+                    dt.Load(cmd.ExecuteReader());
 
-                string query = "SELECT bukuId, judul, hargaSatuan FROM Buku";
-                SqlCommand cmd = new SqlCommand(query, conn);
-
-                SqlDataReader reader = cmd.ExecuteReader();
-
-                DataTable dt = new DataTable();
-                dt.Load(reader);
-
-                cbBuku.DataSource = dt;
-                cbBuku.DisplayMember = "judul";
-                cbBuku.ValueMember = "bukuId";
+                    cbBuku.DataSource = dt;
+                    cbBuku.DisplayMember = "judul";
+                    cbBuku.ValueMember = "bukuId";
+                }
             }
-
-            txtHarga.ReadOnly = true;
-
-            dgvTransaksi.Columns.Clear();
-
-            dgvTransaksi.Columns.Add("bukuId", "ID");
-            dgvTransaksi.Columns.Add("judul", "Judul");
-            dgvTransaksi.Columns.Add("harga", "Harga");
-            dgvTransaksi.Columns.Add("jumlah", "Jumlah");
-            dgvTransaksi.Columns.Add("subtotal", "Subtotal");
-
-            dgvTransaksi.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
         }
 
         private void label1_Click(object sender, EventArgs e)
@@ -84,18 +66,21 @@ namespace SIBUK
             if (cbBuku.SelectedItem is DataRowView row)
             {
                 txtHarga.Text = row["hargaSatuan"].ToString();
+                txtHarga.ReadOnly = true;
             }
         }
 
         private void btnTambah_Click(object sender, EventArgs e)
         {
-            if (!int.TryParse(txtJumlah.Text, out int jumlah))
+            // 1. Validasi Input Dasar
+            if (!int.TryParse(txtJumlah.Text, out int jumlahInput) || jumlahInput < 1)
             {
-                MessageBox.Show("Jumlah harus angka!");
+                MessageBox.Show("Jumlah minimal 1 buku dan harus berupa angka!");
                 return;
             }
 
             int bukuId = Convert.ToInt32(cbBuku.SelectedValue);
+            int jumlahDiKeranjang = 0;
 
             // 2. HITUNG AKUMULASI: Cek berapa jumlah buku ini yang sudah ada di grid
             foreach (DataGridViewRow row in dgvTransaksi.Rows)
@@ -114,40 +99,40 @@ namespace SIBUK
             using (SqlConnection conn = new SqlConnection(connString))
             {
                 conn.Open();
-
-                // CEK STOK
-                string qCek = "SELECT stok FROM Buku WHERE bukuId = @b";
-                SqlCommand cmd = new SqlCommand(qCek, conn);
-                cmd.Parameters.AddWithValue("@b", bukuId);
-
-                int stok = (int)cmd.ExecuteScalar();
-
-                if (jumlah > stok)
+                string qCek = "SELECT stok FROM vw_StokBuku WHERE bukuId = @b";
+                using (SqlCommand cmd = new SqlCommand(qCek, conn))
                 {
-                    MessageBox.Show("Stok tidak cukup!");
-                    return;
+                    cmd.Parameters.AddWithValue("@b", bukuId);
+                    object result = cmd.ExecuteScalar();
+
+                    if (result != null)
+                    {
+                        int stokGudang = Convert.ToInt32(result);
+
+                        if (totalAkanDibeli > stokGudang)
+                        {
+                            MessageBox.Show($"Stok tidak mencukupi!\n" +
+                                            $"Di Gudang: {stokGudang}\n" +
+                                            $"Sudah di Keranjang: {jumlahDiKeranjang}\n" +
+                                            $"Maksimal yang bisa ditambah: {stokGudang - jumlahDiKeranjang}");
+                            return;
+                        }
+                    }
                 }
             }
 
-            // kalau lolos → baru masuk grid
+            // 4. Update atau Tambah ke Grid
             string judul = cbBuku.Text;
             int harga = Convert.ToInt32(txtHarga.Text);
-            int subtotal = harga * jumlah;
-
             bool found = false;
 
             foreach (DataGridViewRow row in dgvTransaksi.Rows)
             {
                 if (row.IsNewRow) continue;
-
                 if (Convert.ToInt32(row.Cells["bukuId"].Value) == bukuId)
                 {
-                    int jumlahLama = Convert.ToInt32(row.Cells["jumlah"].Value);
-                    int jumlahBaru = jumlahLama + jumlah;
-
-                    row.Cells["jumlah"].Value = jumlahBaru;
-                    row.Cells["subtotal"].Value = jumlahBaru * harga;
-
+                    row.Cells["jumlah"].Value = totalAkanDibeli;
+                    row.Cells["subtotal"].Value = totalAkanDibeli * harga;
                     found = true;
                     break;
                 }
@@ -155,10 +140,11 @@ namespace SIBUK
 
             if (!found)
             {
-                dgvTransaksi.Rows.Add(bukuId, judul, harga, jumlah, subtotal);
+                dgvTransaksi.Rows.Add(bukuId, judul, harga, jumlahInput, (harga * jumlahInput));
             }
 
             HitungTotal();
+            txtJumlah.Clear();
         }
         private void HitungTotal()
         {
@@ -175,13 +161,13 @@ namespace SIBUK
 
         private void btnSimpan_Click(object sender, EventArgs e)
         {
-            if (dgvTransaksi.Rows.Count == 0)
+            if (dgvTransaksi.Rows.Count == 0 || (dgvTransaksi.Rows.Count == 1 && dgvTransaksi.Rows[0].IsNewRow))
             {
-                MessageBox.Show("Belum ada item!");
+                MessageBox.Show("Keranjang masih kosong!");
                 return;
             }
 
-            using (SqlConnection conn = new SqlConnection(connString))
+            try
             {
                 // Konversi DataGridView ke format XML string untuk dikirim ke SP
                 string xmlItems = "<root>";
@@ -194,93 +180,130 @@ namespace SIBUK
                 }
                 xmlItems += "</root>";
 
-                using (SqlTransaction trx = conn.BeginTransaction())
+                using (SqlConnection conn = new SqlConnection(connString))
                 {
-                    try
+                    using (SqlCommand cmd = new SqlCommand("sp_SimpanTransaksi", conn))
                     {
-                        // 1) insert header
-                        string q = @"INSERT INTO Transaksi (tanggal, userId, totalHarga, statusBayar)
-                             OUTPUT INSERTED.transaksiId
-                             VALUES (@tgl, @uid, @total, @status)";
-                        SqlCommand cmd = new SqlCommand(q, conn, trx);
-                        cmd.Parameters.AddWithValue("@tgl", DateTime.Now);
-                        cmd.Parameters.AddWithValue("@uid", userId);
+                        cmd.CommandType = CommandType.StoredProcedure;
+
+                        cmd.Parameters.AddWithValue("@userId", userId);
                         cmd.Parameters.AddWithValue("@total", Convert.ToInt32(txtTotal.Text));
                         cmd.Parameters.AddWithValue("@status", "lunas");
+                        cmd.Parameters.AddWithValue("@items", xmlItems);
 
-                        int transaksiId = (int)cmd.ExecuteScalar();
+                        conn.Open();
+                        cmd.ExecuteNonQuery();
 
-                        // 2) insert detail
-                        foreach (DataGridViewRow row in dgvTransaksi.Rows)
-                        {
-                            if (row.IsNewRow) continue;
-
-                            int bukuId = Convert.ToInt32(row.Cells["bukuId"].Value);
-                            int jumlah = Convert.ToInt32(row.Cells["jumlah"].Value);
-
-                            // 1. CEK STOK DULU
-                            string qCek = "SELECT stok FROM Buku WHERE bukuId = @b";
-                            SqlCommand cmdCek = new SqlCommand(qCek, conn, trx);
-                            cmdCek.Parameters.AddWithValue("@b", bukuId);
-
-                            int stok = (int)cmdCek.ExecuteScalar();
-
-        private void btnUpdate_Click(object sender, EventArgs e)
-        {
-            // 1. Validasi baris yang dipilih
-            if (dgvTransaksi.CurrentRow == null || dgvTransaksi.CurrentRow.IsNewRow)
-                            {
-                                MessageBox.Show("Stok tidak cukup!");
-                                trx.Rollback();
-                                return;
-                            }
-
-                            // 2. INSERT DETAIL
-                            string qd = "INSERT INTO Detail_Transaksi (transaksiId, bukuId, jumlah, subTotal) VALUES (@t, @b, @j, @s)";
-                            SqlCommand cd = new SqlCommand(qd, conn, trx);
-
-                            cd.Parameters.AddWithValue("@t", transaksiId);
-                            cd.Parameters.AddWithValue("@b", bukuId);
-                            cd.Parameters.AddWithValue("@j", jumlah);
-                            cd.Parameters.AddWithValue("@s", row.Cells["subtotal"].Value);
-
-                            cd.ExecuteNonQuery();
-
-                            // 3. UPDATE STOK
-                            string qUpdate = "UPDATE Buku SET stok = stok - @j WHERE bukuId = @b";
-                            SqlCommand cmdUpdate = new SqlCommand(qUpdate, conn, trx);
-
-                            cmdUpdate.Parameters.AddWithValue("@j", jumlah);
-                            cmdUpdate.Parameters.AddWithValue("@b", bukuId);
-
-                            cmdUpdate.ExecuteNonQuery();
-                        }
-
-                        trx.Commit();
-                        MessageBox.Show("Transaksi berhasil disimpan!");
-
+                        MessageBox.Show("Transaksi Berhasil Disimpan!");
                         dgvTransaksi.Rows.Clear();
                         txtTotal.Clear();
                     }
-                    catch (Exception ex)
-                    {
-                        trx.Rollback();
-                        MessageBox.Show("Error: " + ex.Message);
-                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Gagal menyimpan transaksi: " + ex.Message);
             }
         }
 
         private void btnKelola_Click(object sender, EventArgs e)
         {
-            FormKelolaBuku f = new FormKelolaBuku();
-            f.ShowDialog();
+            FormKelolaBuku fKelola = new FormKelolaBuku();
+            fKelola.Show();
+            this.Hide(); // Sembunyikan transaksi agar tidak bertumpuk
         }
 
         private void btnLaporan_Click(object sender, EventArgs e)
         {
-            FormLaporan f = new FormLaporan();
-            f.ShowDialog();
+            FormLaporan fLaporan = new FormLaporan();
+            fLaporan.Show();
+            this.Hide();
         }
+
+        private void btnUpdate_Click(object sender, EventArgs e)
+        {
+            // 1. Validasi baris yang dipilih
+            if (dgvTransaksi.CurrentRow == null || dgvTransaksi.CurrentRow.IsNewRow)
+            {
+                MessageBox.Show("Pilih item di tabel terlebih dahulu!");
+                return;
+            }
+
+            // 2. Inisialisasi jumlahBaru dari input user
+            if (!int.TryParse(txtJumlah.Text, out int jumlahBaru) || jumlahBaru <= 0)
+            {
+                MessageBox.Show("Masukkan jumlah baru yang valid (angka positif)!");
+                return;
+            }
+
+            int bukuId = Convert.ToInt32(dgvTransaksi.CurrentRow.Cells["bukuId"].Value);
+
+            using (SqlConnection conn = new SqlConnection(connString))
+            {
+                conn.Open();
+
+                // 3. Cek stok ke VIEW
+                string qCek = "SELECT stok FROM vw_StokBuku WHERE bukuId = @b";
+                using (SqlCommand cmd = new SqlCommand(qCek, conn))
+                {
+                    cmd.Parameters.AddWithValue("@b", bukuId);
+                    int stokTersedia = Convert.ToInt32(cmd.ExecuteScalar());
+
+                    if (jumlahBaru > stokTersedia)
+                    {
+                        MessageBox.Show($"Stok tidak cukup! Stok tersedia di gudang: {stokTersedia}");
+                        return;
+                    }
+                }
+            }
+
+            // 4. Update baris di DataGridView
+            DataGridViewRow row = dgvTransaksi.CurrentRow;
+            int harga = Convert.ToInt32(row.Cells["harga"].Value);
+
+            row.Cells["jumlah"].Value = jumlahBaru;
+            row.Cells["subtotal"].Value = harga * jumlahBaru;
+
+            HitungTotal();
+            MessageBox.Show("Data di keranjang berhasil diperbarui!");
+        }
+
+        private void btnDelete_Click(object sender, EventArgs e)
+        {
+            if (dgvTransaksi.CurrentRow == null || dgvTransaksi.CurrentRow.IsNewRow)
+            {
+                MessageBox.Show("Pilih item yang ingin dihapus terlebih dahulu!");
+                return;
+            }
+
+            string judul = dgvTransaksi.CurrentRow.Cells["judul"].Value.ToString();
+            DialogResult konfirmasi = MessageBox.Show(
+                $"Hapus \"{judul}\" dari keranjang?",
+                "Konfirmasi Hapus",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question
+            );
+
+            if (konfirmasi == DialogResult.Yes)
+            {
+                dgvTransaksi.Rows.Remove(dgvTransaksi.CurrentRow);
+                HitungTotal();
+            }
+        }
+
+        private void btnLogOut_Click(object sender, EventArgs e)
+        {
+            // Cari FormLogin yang tadi di-hide
+            Form login = Application.OpenForms["FormLogin"];
+            if (login != null)
+            {
+                login.Show(); // Munculkan kembali
+                              // Kosongkan text agar user baru harus ngetik lagi
+                login.Controls["txtUsername"].Text = "";
+                login.Controls["txtPassword"].Text = "";
+            }
+            this.Close(); // Tutup form transaksi
+        }
+
     }
 }
