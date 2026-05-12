@@ -183,7 +183,16 @@ namespace SIBUK
 
             using (SqlConnection conn = new SqlConnection(connString))
             {
-                conn.Open();
+                // Konversi DataGridView ke format XML string untuk dikirim ke SP
+                string xmlItems = "<root>";
+                foreach (DataGridViewRow row in dgvTransaksi.Rows)
+                {
+                    if (row.IsNewRow) continue;
+                    xmlItems += $"<item bukuId='{row.Cells["bukuId"].Value}' " +
+                                $"jumlah='{row.Cells["jumlah"].Value}' " +
+                                $"subtotal='{row.Cells["subtotal"].Value}' />";
+                }
+                xmlItems += "</root>";
 
                 using (SqlTransaction trx = conn.BeginTransaction())
                 {
