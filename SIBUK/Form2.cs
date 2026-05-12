@@ -216,7 +216,10 @@ namespace SIBUK
 
                             int stok = (int)cmdCek.ExecuteScalar();
 
-                            if (jumlah > stok)
+        private void btnUpdate_Click(object sender, EventArgs e)
+        {
+            // 1. Validasi baris yang dipilih
+            if (dgvTransaksi.CurrentRow == null || dgvTransaksi.CurrentRow.IsNewRow)
                             {
                                 MessageBox.Show("Stok tidak cukup!");
                                 trx.Rollback();
