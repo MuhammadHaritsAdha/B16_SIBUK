@@ -25,6 +25,11 @@ namespace SIBUK
             using (SqlConnection conn = new SqlConnection(connString))
             {
                 conn.Open();
+                    // QUERY GABUNGAN: Filter Tanggal DAN Judul Buku sekaligus
+                    // Menggunakan vw_LaporanDetail agar data yang muncul detail per buku
+                    string query = @"SELECT * FROM vw_LaporanDetail 
+                             WHERE (tanggal BETWEEN @awal AND @akhir) 
+                             AND (judul LIKE @judul)";
 
                 string query = "SELECT * FROM Transaksi WHERE tanggal BETWEEN @awal AND @akhir";
                 SqlCommand cmd = new SqlCommand(query, conn);
