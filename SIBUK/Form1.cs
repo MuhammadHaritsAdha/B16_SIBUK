@@ -73,3 +73,13 @@ namespace SIBUK
     }
 }
 
+        private void FormLogin_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            // Jika user menutup form login secara manual, matikan seluruh aplikasi
+            if (e.CloseReason == CloseReason.UserClosing)
+            {
+                Application.Exit();
+            }
+        }
+    }
+}
