@@ -38,6 +38,9 @@ namespace SIBUK
 
             using (SqlConnection conn = new SqlConnection(connString))
             {
+                using (SqlCommand cmd = new SqlCommand("sp_GetBukuSimple", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
                 conn.Open();
 
                 string query = "SELECT bukuId, judul, hargaSatuan FROM Buku";
