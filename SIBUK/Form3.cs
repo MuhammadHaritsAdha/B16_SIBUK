@@ -164,6 +164,8 @@ namespace SIBUK
             using (SqlConnection conn = new SqlConnection(connString))
             {
                 conn.Open();
+                    // Mengambil data dari VIEW (vw_BukuPublic) 
+                    string query = "SELECT * FROM vw_BukuPublic";
 
                 string query = "SELECT * FROM Buku";
                 SqlDataAdapter da = new SqlDataAdapter(query, conn);
