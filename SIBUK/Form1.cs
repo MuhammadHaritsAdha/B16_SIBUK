@@ -22,7 +22,8 @@ namespace SIBUK
                 {
                     conn.Open();
 
-                    string query = "SELECT * FROM Users WHERE username=@u AND password=@p";
+                    // MEMANGGIL VIEW: Query diarahkan ke vw_UserLogin, bukan tabel Users
+                    string query = "SELECT * FROM vw_UserLogin WHERE username=@u AND password=@p";
 
                     SqlCommand cmd = new SqlCommand(query, conn);
                     cmd.Parameters.AddWithValue("@u", txtUsername.Text);
