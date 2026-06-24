@@ -15,3 +15,19 @@ Form Delete Data
 
 Form Search
 <img width="972" height="365" alt="Screenshot 2026-04-15 112945" src="https://github.com/user-attachments/assets/0212105a-dec5-487a-8921-8b7eaebea23f" />
+
+Simulasi Keamanan: SQL Injection (Hacking Demo)
+
+Aplikasi ini memiliki fitur simulasi pada **Form Kelola Buku** untuk mendemonstrasikan bahaya query SQL yang tidak aman.
+
+#Cara Kerja Celah Keamanan
+
+Celah ini terjadi karena input dari `txtJudul` digabungkan secara langsung ke dalam perintah SQL tanpa filter/parameter.
+
+Sebelum Test SQL Injection
+
+<img width="620" height="493" alt="image" src="https://github.com/user-attachments/assets/060817e5-6e33-496e-bc45-480f005f0bfa" />
+
+Setelah SQL Injection
+
+<img width="611" height="491" alt="image" src="https://github.com/user-attachments/assets/d917194a-1759-415b-977a-56cf6df7a8e8" />
