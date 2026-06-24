@@ -1,61 +1,57 @@
 ﻿using System;
-using System.Data.SqlClient;
+using System.Data;
 using System.Drawing;
 using System.Windows.Forms;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace SIBUK
 {
     public partial class FormLogin : Form
     {
-        SqlCommand cmd;
-        SqlConnection conn;
-        string connString = "Data Source=RITS;Initial Catalog=TokoBukuDB;Integrated Security=True";
+        DAL dal = new DAL();
+        string connString;
+
         public FormLogin()
         {
             InitializeComponent();
             txtPassword.UseSystemPasswordChar = true;
+            connString = DAL.GetConnectionString(); // Mengambil string koneksi terpusat
         }
+
         private void btnLogin_Click(object sender, EventArgs e)
         {
+            // Validasi input kosong di UI (Presentation Layer)
+            if (string.IsNullOrEmpty(txtUsername.Text) || string.IsNullOrEmpty(txtPassword.Text))
+            {
+                MessageBox.Show("Username dan Password tidak boleh kosong!", "Peringatan", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             try
             {
-                using (SqlConnection conn = new SqlConnection(connString))
+                // 2. MANGGIL DAL (Model 3-Tier): Mengirim input ke Data Access Layer
+                DataRow userRow = dal.CekLogin(txtUsername.Text, txtPassword.Text);
+
+                if (userRow != null)
                 {
-                    conn.Open();
+                    // Ambil data hasil olahan DAL dari baris tabel
+                    string role = userRow["role"].ToString();
+                    int userId = Convert.ToInt32(userRow["userId"]);
 
-                    // MEMANGGIL VIEW: Query diarahkan ke vw_UserLogin, bukan tabel Users
-                    string query = "SELECT * FROM vw_UserLogin WHERE username=@u AND password=@p";
+                    MessageBox.Show("Login berhasil sebagai " + role + "!", "Sukses", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-                    using (SqlCommand cmd = new SqlCommand(query, conn))
-                    {
-                        cmd.Parameters.AddWithValue("@u", txtUsername.Text);
-                        cmd.Parameters.AddWithValue("@p", txtPassword.Text);
-
-                        using (SqlDataReader reader = cmd.ExecuteReader())
-                        {
-                            if (reader.Read())
-                            {
-                                string role = reader["role"].ToString();
-                                int userId = Convert.ToInt32(reader["userId"]);
-
-                                MessageBox.Show("Login berhasil sebagai " + role + "!");
-
-                                FormTransaksi f = new FormTransaksi(role, userId);
-                                f.Show();
-                                this.Hide();
-                            }
-                            else
-                            {
-                                MessageBox.Show("Username atau Password Salah!");
-                            }
-                        }
-                    }
+                    // Buka form utama transaksi dengan parameter role & userId
+                    FormTransaksi f = new FormTransaksi(role, userId);
+                    f.Show();
+                    this.Hide();
+                }
+                else
+                {
+                    MessageBox.Show("Username atau Password Salah!", "Login Gagal", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error Login: " + ex.Message);
+                MessageBox.Show("Error Sistem Login: " + ex.Message, "System Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -66,9 +62,10 @@ namespace SIBUK
 
         private void CekKoneksi()
         {
+            // Pengecekan status koneksi awal aplikasi
             try
             {
-                using (SqlConnection conn = new SqlConnection(connString))
+                using (System.Data.SqlClient.SqlConnection conn = new System.Data.SqlClient.SqlConnection(connString))
                 {
                     conn.Open();
                     lblKoneksi.Text = "Terhubung ke Database";
@@ -84,11 +81,14 @@ namespace SIBUK
 
         private void FormLogin_FormClosing(object sender, FormClosingEventArgs e)
         {
-            // Jika user menutup form login secara manual, matikan seluruh aplikasi
             if (e.CloseReason == CloseReason.UserClosing)
             {
                 Application.Exit();
             }
+        }
+
+        private void lblKoneksi_Click(object sender, EventArgs e)
+        {
         }
     }
 }
