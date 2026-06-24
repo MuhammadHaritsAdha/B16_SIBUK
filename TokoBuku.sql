@@ -264,3 +264,103 @@ GO
 
 -- Membuat cadangan data asli (Langkah 9a Modul 9)
 SELECT * INTO Buku_Backup FROM Buku;
+
+select * from users
+
+USE TokoBukuDB; -- Sesuaikan nama database lu jika berbeda
+GO
+
+CREATE PROCEDURE sp_GetLaporanCrystal
+    @awal DATETIME,
+    @akhir DATETIME,
+    @judul VARCHAR(150)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Kolom disamakan persis dengan isi SELECT pada vw_LaporanDetail lu
+    SELECT 
+        transaksiId,
+        tanggal,
+        judul,
+        jumlah,
+        subTotal,     -- Menggunakan nama asli camelCase bawaan view lu
+        totalHarga,
+        statusBayar
+    FROM vw_LaporanDetail 
+    WHERE 
+        (CAST(tanggal AS DATE) BETWEEN CAST(@awal AS DATE) AND CAST(@akhir AS DATE)) 
+        AND (judul LIKE '%' + TRIM(@judul) + '%');
+END
+GO
+
+CREATE TRIGGER trg_CekStokSebelumPenjualan
+ON Detail_Transaksi
+INSTEAD OF INSERT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Validasi T-SQL: Cek apakah ada buku yang jumlah belinya > stok tersedia saat ini
+    IF EXISTS (
+        SELECT 1 
+        FROM Buku B
+        INNER JOIN inserted i ON B.bukuId = i.bukuId
+        WHERE B.stok < i.jumlah
+    )
+    BEGIN
+        -- Lempar error secara paksa keluar sistem jika stok tidak mencukupi
+        RAISERROR('Transaksi dibatalkan otomatis oleh TRIGGER karena stok buku tidak mencukupi!', 16, 1);
+        
+        -- Gagalkan transaksi induk di Stored Procedure
+        IF @@TRANCOUNT > 0 
+            ROLLBACK TRANSACTION;
+    END
+    ELSE
+    BEGIN
+        -- Jika lolos validasi stok, teruskan perintah INSERT asli ke tabel Detail_Transaksi
+        INSERT INTO Detail_Transaksi (transaksiId, bukuId, jumlah, subTotal)
+        SELECT transaksiId, bukuId, jumlah, subTotal FROM inserted;
+    END
+END;
+GO
+
+ALTER VIEW vw_LaporanDetail AS
+SELECT 
+    t.transaksiId,
+    t.tanggal,
+    b.judul,
+    dt.jumlah,
+    b.hargaSatuan AS hargaSatuan,
+    t.totalHarga,
+    t.statusBayar
+FROM Transaksi t
+JOIN Detail_Transaksi dt ON t.transaksiId = dt.transaksiId
+JOIN Buku b ON dt.bukuId = b.bukuId;
+GO
+
+ALTER PROCEDURE sp_GetLaporanCrystal
+    @awal DATE,
+    @akhir DATE,
+    @judul VARCHAR(100)
+AS
+BEGIN
+    SELECT 
+        transaksiId,
+        tanggal,
+        judul,
+        jumlah,
+        hargaSatuan, 
+        totalHarga,
+        statusBayar
+    FROM vw_LaporanDetail
+    WHERE (tanggal BETWEEN @awal AND @akhir)
+      AND (judul LIKE '%' + @judul + '%');
+END
+GO
+
+select * from Buku_Backup;
+INSERT INTO Buku_Backup(judul, pengarang, penerbit, hargaSatuan, stok)
+VALUES
+('Bumi', 'Tere Liye', 'Sabakgrip', 700000, 18),
+('Judol', 'Rayhan', 'Kyou', 25000, 8);
