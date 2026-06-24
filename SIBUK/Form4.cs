@@ -1,17 +1,19 @@
 ﻿using System;
 using System.Data;
-using System.Data.SqlClient;
 using System.Windows.Forms;
 
 namespace SIBUK
 {
     public partial class FormLaporan : Form
     {
-        string connString = "Data Source=RITS;Initial Catalog=TokoBukuDB;Integrated Security=True";
+        // 3-TIER: Menggunakan objek objek DAL (dbLogic) untuk interaksi database
+        DAL dbLogic = new DAL();
+
         public FormLaporan()
         {
             InitializeComponent();
         }
+
         private void FormLaporan_Load(object sender, EventArgs e)
         {
             dgvLaporan.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
@@ -32,56 +34,45 @@ namespace SIBUK
             decimal totalLaporan = 0;
             int jumlahBaris = 0;
 
-            using (SqlConnection conn = new SqlConnection(connString))
+            try
             {
-                try
+                // Memanggil fungsi data melalui class DAL
+                DataTable dt = dbLogic.GetLaporanDetail(
+                    dtpAwal.Value.Date,
+                    dtpAkhir.Value.Date,
+                    txtCariBuku.Text.Trim()
+                );
+
+                // Pasang data ke GridView
+                dgvLaporan.DataSource = dt;
+
+                jumlahBaris = dt.Rows.Count;
+                foreach (DataRow row in dt.Rows)
                 {
-                    conn.Open();
-                    // QUERY GABUNGAN: Filter Tanggal DAN Judul Buku sekaligus
-                    // Menggunakan vw_LaporanDetail agar data yang muncul detail per buku
-                    string query = @"SELECT * FROM vw_LaporanDetail 
-                             WHERE (tanggal BETWEEN @awal AND @akhir) 
-                             AND (judul LIKE @judul)";
-
-                    using (SqlCommand cmd = new SqlCommand(query, conn))
+                    // DI SINI PENYEBAB ERRORNYA! 
+                    // Pastikan kodenya sudah diganti menjadi "hargaSatuan" bukan "subTotal"
+                    if (row["hargaSatuan"] != DBNull.Value)
                     {
-                        // Ambil nilai dari DateTimePicker dan TextBox
-                        cmd.Parameters.AddWithValue("@awal", dtpAwal.Value.Date);
-                        cmd.Parameters.AddWithValue("@akhir", dtpAkhir.Value.Date);
-                        cmd.Parameters.AddWithValue("@judul", "%" + txtCariBuku.Text.Trim() + "%");
-
-                        SqlDataAdapter da = new SqlDataAdapter(cmd);
-                        DataTable dt = new DataTable();
-                        da.Fill(dt);
-
-                        dgvLaporan.DataSource = dt;
-
-                        //Hitung langsung dari DataTable
-                        jumlahBaris = dt.Rows.Count;
-                        foreach (DataRow row in dt.Rows)
-                        {
-                            if (row["subTotal"] != DBNull.Value)
-                            {
-                                totalLaporan += Convert.ToDecimal(row["subTotal"]);
-                            }
-                        }
-
-                        // Tampilkan hasil
-                        txtTotal.Text = totalLaporan.ToString("N0"); // Format ribuan (1,000,000)
-                        txtJumlah.Text = jumlahBaris.ToString();
-
-                        if (jumlahBaris == 0)
-                        {
-                            MessageBox.Show("Data tidak ditemukan untuk kriteria tersebut.");
-                        }
+                        totalLaporan += Convert.ToDecimal(row["hargaSatuan"]);
                     }
                 }
-                catch (Exception ex)
+
+                // Tampilkan hasil ke UI TextBox setelah loop sukses tanpa error
+                txtTotal.Text = totalLaporan.ToString("N0");
+                txtJumlah.Text = jumlahBaris.ToString();
+
+                if (jumlahBaris == 0)
                 {
-                    MessageBox.Show("Gagal memuat laporan: " + ex.Message);
+                    MessageBox.Show("Data tidak ditemukan untuk kriteria tersebut.", "Informasi", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
             }
+            catch (Exception ex)
+            {
+                // Pesan error yang muncul di gambar berasal dari blok catch ini
+                MessageBox.Show("Gagal memuat laporan via DAL: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
+
         private void btnKembali_Click(object sender, EventArgs e)
         {
             // Cek apakah FormTransaksi sudah terbuka di background
@@ -98,6 +89,51 @@ namespace SIBUK
             }
 
             this.Close(); // Tutup form saat ini (Kelola/Laporan)
+        }
+
+        private void btnCetak_Click(object sender, EventArgs e)
+        {
+            // 1. Validasi: Jika DataGridView masih kosong atau belum melakukan pencarian (Cari), batalkan proses cetak
+            if (dgvLaporan.DataSource == null || dgvLaporan.Rows.Count == 0)
+            {
+                MessageBox.Show("Silakan klik tombol 'Cari' terlebih dahulu untuk memastikan data tersedia sebelum dicetak.", "Peringatan", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            try
+            {
+                // 3-TIER: Memanggil Stored Procedure crystal report melalui fungsi terpusat DAL
+                DataTable dt = dbLogic.GetLaporanCrystal(
+                    dtpAwal.Value.Date,
+                    dtpAkhir.Value.Date,
+                    txtCariBuku.Text.Trim()
+                );
+
+                // Cek lagi apakah setelah di-fill datanya benar-benar ada
+                if (dt.Rows.Count == 0)
+                {
+                    MessageBox.Show("Data tidak ditemukan untuk dicetak.", "Informasi", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+
+                // 2. Panggil Form Baru bernama 'Report' dan kirim datanya lewat Constructor
+                Report frmCetak = new Report(dt, txtTotal.Text);
+
+                // Menampilkan form Report sebagai Pop-Up Jendela Terfokus
+                frmCetak.ShowDialog();
+
+                // Dispose setelah ditutup agar memori bersih dan tidak menahan cache
+                frmCetak.Dispose();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Gagal memproses cetakan via DAL: " + ex.Message, "Error Laporan", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void dgvLaporan_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+
         }
     }
 }
